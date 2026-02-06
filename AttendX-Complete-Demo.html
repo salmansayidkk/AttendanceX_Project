@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendX - Workforce Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0A0E27;
+            --secondary: #1a1f3a;
+            --accent: #00D9FF;
+            --accent-glow: rgba(0, 217, 255, 0.2);
+            --success: #00FF94;
+            --warning: #FFB800;
+            --danger: #FF3366;
+            --text-primary: #E8EAED;
+            --text-secondary: #9BA3AF;
+            --border: rgba(255, 255, 255, 0.08);
+            --card-bg: rgba(26, 31, 58, 0.6);
+            --glass-bg: rgba(255, 255, 255, 0.02);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Darker Grotesque', sans-serif;
+            background: var(--primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 217, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 255, 148, 0.08) 0%, transparent 50%);
+            animation: bgShift 15s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--secondary);
+            border-right: 1px solid var(--border);
+            padding: 2rem 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            overflow-y: auto;
+        }
+
+        .logo {
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 1rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--accent);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--glass-bg);
+            color: var(--text-primary);
+        }
+
+        .nav-link.active::before {
+            transform: scaleY(1);
+        }
+
+        .nav-icon {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-left h2 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+
+        .header-left p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            width: 300px;
+            transition: all 0.3s ease;
+            font-family: 'Darker Grotesque', sans-serif;
+            font-weight: 500;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        .user-profile:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.1rem;
+        }
+
+        .user-info {
+            text-align: left;
+        }
+
+        .user-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .time-display {
+            text-align: center;
+            padding: 2rem;
+            background: var(--glass-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .current-time {
+            font-size: 3.5rem;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .current-date {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            animation: fadeInUp 0.6s ease-out 0.2s backwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .stat-icon.primary {
+            background: rgba(0, 217, 255, 0.15);
+            color: var(--accent);
+        }
+
+        .stat-icon.success {
+            background: rgba(0, 255, 148, 0.15);
+            color: var(--success);
+        }
+
+        .stat-icon.warning {
+            background: rgba(255, 184, 0, 0.15);
+            color: var(--warning);
+        }
+
+        .stat-icon.danger {
+            background: rgba(255, 51, 102, 0.15);
+            color: var(--danger);
+        }
+
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .stat-trend.up {
+            background: rgba(0, 255, 148, 0.1);
+            color: var(--success);
+        }
+
+        .stat-trend.down {
+            background: rgba(255, 51, 102, 0.1);
+            color: var(--danger);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.6s ease-out 0.4s backwards;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 217, 255, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Darker Grotesque', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            background: rgba(0, 217, 255, 0.1);
+        }
+
+        .attendance-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.75rem;
+        }
+
+        .attendance-table thead th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .attendance-table tbody tr {
+            background: var(--glass-bg);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .attendance-table tbody tr:hover {
+            background: rgba(0, 217, 255, 0.05);
+            transform: translateX(5px);
+        }
+
+        .attendance-table tbody td {
+            padding: 1.25rem 1rem;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .attendance-table tbody td:first-child {
+            border-left: 1px solid var(--border);
+            border-radius: 12px 0 0 12px;
+        }
+
+        .attendance-table tbody td:last-child {
+            border-right: 1px solid var(--border);
+            border-radius: 0 12px 12px 0;
+        }
+
+        .employee-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .employee-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1rem;
+        }
+
+        .employee-details h4 {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .employee-details p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.present {
+            background: rgba(0, 255, 148, 0.15);
+            color: var(--success);
+        }
+
+        .status-badge.late {
+            background: rgba(255, 184, 0, 0.15);
+            color: var(--warning);
+        }
+
+        .status-badge.absent {
+            background: rgba(255, 51, 102, 0.15);
+            color: var(--danger);
+        }
+
+        .status-badge.leave {
+            background: rgba(0, 217, 255, 0.15);
+            color: var(--accent);
+        }
+
+        .quick-actions {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .action-item {
+            background: var(--glass-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .action-item:hover {
+            background: rgba(0, 217, 255, 0.05);
+            border-color: var(--accent);
+            transform: translateX(5px);
+        }
+
+        .action-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: rgba(0, 217, 255, 0.1);
+            color: var(--accent);
+        }
+
+        .action-content h4 {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .action-content p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .device-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .device-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .device-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--success);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .device-card.offline::before {
+            background: var(--danger);
+        }
+
+        .device-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .device-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .device-status {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--success);
+            margin-bottom: 1rem;
+            box-shadow: 0 0 10px var(--success);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .device-card.offline .device-status {
+            background: var(--danger);
+            box-shadow: 0 0 10px var(--danger);
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .device-name {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .device-location {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .device-info {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+
+        .page-content {
+            display: none;
+        }
+
+        .page-content.active {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 1200px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1.5rem;
+                align-items: flex-start;
+            }
+
+            .search-box input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <h1>AttendX</h1>
+            <p>Workforce Management</p>
+        </div>
+        <nav>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link active" data-page="dashboard">
+                        <span class="nav-icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-page="employees">
+                        <span class="nav-icon">👥</span>
+                        <span>Employees</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-page="attendance">
+                        <span class="nav-icon">✓</span>
+                        <span>Attendance</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-page="leave">
+                        <span class="nav-icon">🏖️</span>
+                        <span>Leave Management</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-page="payroll">
+                        <span class="nav-icon">💰</span>
+                        <span>Payroll</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-page="devices">
+                        <span class="nav-icon">📱</span>
+                        <span>Devices</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-page="reports">
+                        <span class="nav-icon">📈</span>
+                        <span>Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-page="settings">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page-content active">
+            <header class="header">
+                <div class="header-left">
+                    <h2>Welcome Back, Admin</h2>
+                    <p>Here's what's happening with your workforce today</p>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" placeholder="Search employees, reports...">
+                    </div>
+                    <div class="user-profile">
+                        <div class="user-avatar">A</div>
+                        <div class="user-info">
+                            <div class="user-name">Admin User</div>
+                            <div class="user-role">System Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="time-display">
+                <div class="current-time" id="currentTime">00:00:00</div>
+                <div class="current-date" id="currentDate">Loading...</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon primary">👥</div>
+                        <div class="stat-trend up">↑ 12%</div>
+                    </div>
+                    <div class="stat-value">324</div>
+                    <div class="stat-label">Total Employees</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon success">✓</div>
+                        <div class="stat-trend up">↑ 5%</div>
+                    </div>
+                    <div class="stat-value">298</div>
+                    <div class="stat-label">Present Today</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon warning">⏰</div>
+                        <div class="stat-trend down">↓ 3%</div>
+                    </div>
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Late Arrivals</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon danger">🏖️</div>
+                        <div class="stat-trend up">↑ 8%</div>
+                    </div>
+                    <div class="stat-value">14</div>
+                    <div class="stat-label">On Leave</div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Attendance</h3>
+                        <button class="btn btn-secondary">View All</button>
+                    </div>
+                    <table class="attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="employee-info">
+                                        <div class="employee-avatar">SK</div>
+                                        <div class="employee-details">
+                                            <h4>Sarah Khan</h4>
+                                            <p>Engineering - EMP001</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>08:45 AM</td>
+                                <td>05:30 PM</td>
+                                <td><span class="status-badge present">Present</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="employee-info">
+                                        <div class="employee-avatar">MP</div>
+                                        <div class="employee-details">
+                                            <h4>Michael Park</h4>
+                                            <p>Marketing - EMP002</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>09:15 AM</td>
+                                <td>06:00 PM</td>
+                                <td><span class="status-badge late">Late</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="employee-info">
+                                        <div class="employee-avatar">AR</div>
+                                        <div class="employee-details">
+                                            <h4>Ahmed Rahman</h4>
+                                            <p>Sales - EMP003</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>08:30 AM</td>
+                                <td>--:--</td>
+                                <td><span class="status-badge present">Present</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="employee-info">
+                                        <div class="employee-avatar">LW</div>
+                                        <div class="employee-details">
+                                            <h4>Lisa Wang</h4>
+                                            <p>HR - EMP004</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>--:--</td>
+                                <td>--:--</td>
+                                <td><span class="status-badge leave">On Leave</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Quick Actions</h3>
+                    </div>
+                    <div class="quick-actions">
+                        <div class="action-item">
+                            <div class="action-icon">➕</div>
+                            <div class="action-content">
+                                <h4>Add Employee</h4>
+                                <p>Onboard new team member</p>
+                            </div>
+                        </div>
+                        <div class="action-item">
+                            <div class="action-icon">📝</div>
+                            <div class="action-content">
+                                <h4>Leave Requests</h4>
+                                <p>8 pending approvals</p>
+                            </div>
+                        </div>
+                        <div class="action-item">
+                            <div class="action-icon">📊</div>
+                            <div class="action-content">
+                                <h4>Generate Report</h4>
+                                <p>Monthly attendance report</p>
+                            </div>
+                        </div>
+                        <div class="action-item">
+                            <div class="action-icon">💳</div>
+                            <div class="action-content">
+                                <h4>Process Payroll</h4>
+                                <p>Calculate monthly salaries</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Connected Devices</h3>
+                    <button class="btn btn-primary" onclick="alert('Navigate to Devices page to add ZKTeco devices')">Add Device</button>
+                </div>
+                <div id="deviceGrid" class="device-grid"></div>
+                <div id="noDevices" class="empty-state">
+                    <div class="empty-state-icon">📱</div>
+                    <h3>No Devices Connected</h3>
+                    <p>Click "Devices" in the menu to add your first ZKTeco biometric device</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Devices Page -->
+        <div id="devices" class="page-content">
+            <header class="header">
+                <div class="header-left">
+                    <h2>Device Management</h2>
+                    <p>Add and configure your ZKTeco biometric devices</p>
+                </div>
+            </header>
+
+            <div class="card">
+                <h3 class="card-title" style="margin-bottom: 2rem;">How to Add ZKTeco Devices</h3>
+                <div class="quick-actions">
+                    <div class="action-item">
+                        <div class="action-icon">1️⃣</div>
+                        <div class="action-content">
+                            <h4>Configure Device Network</h4>
+                            <p>On your ZKTeco device, go to Settings > Network and set a static IP address (e.g., 192.168.1.201)</p>
+                        </div>
+                    </div>
+                    <div class="action-item">
+                        <div class="action-icon">2️⃣</div>
+                        <div class="action-content">
+                            <h4>Set Server IP on Device</h4>
+                            <p>Configure the server IP to point to this system's IP address with port 4370 (e.g., 192.168.1.100:4370)</p>
+                        </div>
+                    </div>
+                    <div class="action-item">
+                        <div class="action-icon">3️⃣</div>
+                        <div class="action-content">
+                            <h4>Add Device in AttendX</h4>
+                            <p>Enter the device's IP address, select the model, and test the connection below</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <h3 class="card-title" style="margin-bottom: 2rem;">Add New Device</h3>
+                <form id="addDeviceForm" style="max-width: 600px;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 600;">Device Type</label>
+                        <select style="width: 100%; padding: 0.875rem; background: var(--glass-bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); font-family: 'Darker Grotesque', sans-serif;">
+                            <option>ZKTeco F18</option>
+                            <option>ZKTeco MA300</option>
+                            <option>ZKTeco K40</option>
+                            <option>ZKTeco G3</option>
+                            <option>ZKTeco MB360</option>
+                            <option>ZKTeco SpeedFace-V5L</option>
+                            <option>Other ZKTeco Device</option>
+                        </select>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 600;">IP Address</label>
+                            <input type="text" placeholder="192.168.1.201" style="width: 100%; padding: 0.875rem; background: var(--glass-bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); font-family: 'Darker Grotesque', sans-serif;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 600;">Port</label>
+                            <input type="text" value="4370" style="width: 100%; padding: 0.875rem; background: var(--glass-bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); font-family: 'Darker Grotesque', sans-serif;">
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 600;">Device Name</label>
+                        <input type="text" placeholder="e.g., Main Entrance" style="width: 100%; padding: 0.875rem; background: var(--glass-bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); font-family: 'Darker Grotesque', sans-serif;">
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 600;">Location</label>
+                        <input type="text" placeholder="e.g., Building A - Ground Floor" style="width: 100%; padding: 0.875rem; background: var(--glass-bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); font-family: 'Darker Grotesque', sans-serif;">
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="button" class="btn btn-secondary" onclick="alert('Testing connection to device... ✓ Connection successful!')">Test Connection</button>
+                        <button type="button" class="btn btn-primary" onclick="alert('Device added successfully! In production, this would sync with the actual ZKTeco device.')">Add Device</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">
+                    <h3 class="card-title">Your Devices</h3>
+                </div>
+                <div class="empty-state">
+                    <div class="empty-state-icon">📱</div>
+                    <h3>No Devices Added Yet</h3>
+                    <p>Add your first device using the form above. Once connected, devices will appear here with real-time status.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Other Pages (Simplified for demo) -->
+        <div id="employees" class="page-content">
+            <header class="header">
+                <div class="header-left">
+                    <h2>Employee Management</h2>
+                    <p>Manage your workforce</p>
+                </div>
+            </header>
+            <div class="card">
+                <div class="empty-state">
+                    <div class="empty-state-icon">👥</div>
+                    <h3>Employee Management</h3>
+                    <p>This page would show employee list with add/edit/delete functionality.<br>Download the full package for complete implementation.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="attendance" class="page-content">
+            <header class="header">
+                <div class="header-left">
+                    <h2>Attendance Records</h2>
+                    <p>Track employee attendance</p>
+                </div>
+            </header>
+            <div class="card">
+                <div class="empty-state">
+                    <div class="empty-state-icon">✓</div>
+                    <h3>Attendance Tracking</h3>
+                    <p>This page shows detailed attendance logs synced from ZKTeco devices.<br>Download the full package for complete implementation.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="leave" class="page-content">
+            <header class="header">
+                <div class="header-left">
+                    <h2>Leave Management</h2>
+                    <p>Manage leave requests</p>
+                </div>
+            </header>
+            <div class="card">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🏖️</div>
+                    <h3>Leave Management</h3>
+                    <p>Approve or reject employee leave requests.<br>Download the full package for complete implementation.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="payroll" class="page-content">
+            <header class="header">
+                <div class="header-left">
+                    <h2>Payroll</h2>
+                    <p>Process employee salaries</p>
+                </div>
+            </header>
+            <div class="card">
+                <div class="empty-state">
+                    <div class="empty-state-icon">💰</div>
+                    <h3>Payroll Processing</h3>
+                    <p>Calculate salaries based on attendance data.<br>Download the full package for complete implementation.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="reports" class="page-content">
+            <header class="header">
+                <div class="header-left">
+                    <h2>Reports</h2>
+                    <p>Generate attendance and payroll reports</p>
+                </div>
+            </header>
+            <div class="card">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📈</div>
+                    <h3>Reports & Analytics</h3>
+                    <p>Generate various reports and export to Excel/PDF.<br>Download the full package for complete implementation.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings" class="page-content">
+            <header class="header">
+                <div class="header-left">
+                    <h2>Settings</h2>
+                    <p>Configure system preferences</p>
+                </div>
+            </header>
+            <div class="card">
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚙️</div>
+                    <h3>System Settings</h3>
+                    <p>Configure company info, working hours, and policies.<br>Download the full package for complete implementation.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = this.getAttribute('data-page');
+                
+                // Update active nav
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show page
+                document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+                document.getElementById(page).classList.add('active');
+            });
+        });
+
+        // Time update
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateString = now.toLocaleDateString('en-US', { 
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            const timeEl = document.getElementById('currentTime');
+            const dateEl = document.getElementById('currentDate');
+            if (timeEl) timeEl.textContent = timeString;
+            if (dateEl) dateEl.textContent = dateString;
+        }
+
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Check for devices
+        const devices = JSON.parse(localStorage.getItem('devices') || '[]');
+        if (devices.length === 0) {
+            document.getElementById('deviceGrid').style.display = 'none';
+            document.getElementById('noDevices').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin - AttendX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        // Immediate Auth Check
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+    </script>
+</head>
+</head>
+
+<body>
+    <div class="main-content" style="margin-left: 0; max-width: 1400px; margin: 0 auto; padding: 2rem;">
+        <header class="header">
+            <div class="header-left">
+                <h2>Super Admin Portal</h2>
+                <p>Enterprise Tenant Management</p>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-secondary" id="logoutBtn"
+                    style="background: rgba(255, 75, 75, 0.2); color: #ff6b6b; border: 1px solid #ff6b6b;">Logout</button>
+            </div>
+        </header>
+
+        <div class="admin-header">
+            <h1>Platform Overview</h1>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="value" id="totalTenants">-</div>
+                    <div class="label">Active Tenants</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs" style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+            <button class="btn btn-secondary active-tab" id="tabTenants" onclick="switchTab('tenants')"
+                style="background: var(--accent); border-color: var(--accent); color: white;">Organizations</button>
+            <button class="btn btn-secondary" id="tabSystem" onclick="switchTab('system')"
+                style="background: transparent; color: var(--text-secondary);">System Users</button>
+        </div>
+
+        <!-- TENANTS VIEW -->
+        <div class="card" id="viewTenants">
+            <div class="card-header" style="justify-content: space-between; display: flex; align-items: center;">
+                <h3>Registered Organizations</h3>
+                <div style="display: flex; gap: 1rem;">
+                    <input type="text" class="search-bar" placeholder="Search companies..." id="searchInput">
+                    <button class="btn btn-auth" onclick="toggleAuth('register', true)" style="width: auto; margin:0;">+
+                        Add New Tenant</button>
+                </div>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Company Name</th>
+                        <th>Tenant ID</th>
+                        <th>Admin Email</th>
+                        <th>Plan</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tenantList">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SYSTEM USERS VIEW -->
+        <div class="card" id="viewSystem" style="display: none;">
+            <div class="card-header" style="justify-content: space-between; display: flex; align-items: center;">
+                <h3>System Administrators & Staff</h3>
+                <button class="btn btn-auth"
+                    onclick="document.getElementById('addSystemUserModal').style.display='flex'"
+                    style="width: auto; margin:0;">+ Add System User</button>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="systemUserList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add System User Modal -->
+    <div id="addSystemUserModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal"
+                onclick="document.getElementById('addSystemUserModal').style.display='none'">&times;</span>
+            <h2 style="margin-bottom: 2rem;">Add System User</h2>
+            <form id="addSystemUserForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input" id="sysName" required placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="sysEmail" required placeholder="admin@attendx.com">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" id="sysPass" required placeholder="Secure password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Role</label>
+                        <select class="form-select" id="sysRole">
+                            <option value="super_admin">Super Admin (Full Access)</option>
+                            <option value="manager">Platform Manager</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary"
+                        onclick="document.getElementById('addSystemUserModal').style.display='none'">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit/Manage Modal -->
+    <div id="manageModal" class="modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="modal-content"
+            style="background: var(--secondary-bg); padding: 2rem; border-radius: 15px; width: 90%; max-width: 500px; position: relative;">
+            <span class="close-modal" onclick="closeModal()"
+                style="position: absolute; top: 1rem; right: 1rem; cursor: pointer; font-size: 1.5rem; color: #fff;">&times;</span>
+            <h2 id="modalTitle">Manage Tenant</h2>
+
+            <div id="modalBody" style="margin-top: 1.5rem;">
+                <div
+                    style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                    <p style="margin: 0.5rem 0;"><strong>Company:</strong> <span id="modalCompanyName"
+                            style="color: var(--accent);"></span></p>
+                    <p style="margin: 0.5rem 0;"><strong>Email:</strong> <span id="modalEmail"></span></p>
+                    <p style="margin: 0.5rem 0; font-family: monospace; font-size: 0.9em;"><strong>ID:</strong> <span
+                            id="modalId"></span></p>
+                </div>
+
+                <h4 style="margin-bottom: 1rem;">Security Actions</h4>
+                <div class="form-group">
+                    <label class="form-label">Reset Admin Password</label>
+                    <input type="password" class="form-input" id="newTenantPassword" placeholder="Enter new password">
+                </div>
+                <button class="btn btn-auth" onclick="resetTenantPassword()">Update Password</button>
+
+                <hr style="border-color: var(--border); margin: 2rem 0;">
+
+                <h4 style="color: var(--danger);">Danger Zone</h4>
+                <button class="btn btn-sm btn-danger" style="width: 100%; margin: 0; padding: 1rem;"
+                    onclick="deleteTenant()">Delete Organization (Irreversible)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Tenant Modal override structure from login page reuse attempt  -->
+    <!-- Create Tenant Modal (Standardized) -->
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeCreateModal()">&times;</span>
+            <h2 style="margin-bottom: 2rem;">Onboard New Organization</h2>
+            <form id="createTenantForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Company Name</label>
+                        <input type="text" class="form-input" id="newCompName" required placeholder="Ex: Acme Corp">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Admin Email</label>
+                        <input type="email" class="form-input" id="newCompEmail" required
+                            placeholder="admin@company.com">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Initial Password</label>
+                        <input type="password" class="form-input" id="newCompPass" required
+                            placeholder="Strong password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Plan</label>
+                        <select class="form-select" id="newCompPlan">
+                            <option value="Enterprise">Enterprise</option>
+                            <option value="Professional">Professional</option>
+                            <option value="Starter">Starter</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Tenant</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        let currentTenantId = null;
+
+        // --- AUTH & INIT ---
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        });
+
+        // --- MODAL LOGIC ---
+        function openManageModal(id, name, email) {
+            currentTenantId = id;
+            document.getElementById('modalCompanyName').textContent = name;
+            document.getElementById('modalEmail').textContent = email;
+            document.getElementById('modalId').textContent = id;
+            document.getElementById('manageModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('manageModal').style.display = 'none';
+        }
+
+        function toggleAuth(mode, show) {
+            if (mode === 'register' && show) {
+                document.getElementById('createModal').style.display = 'flex';
+            }
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal').style.display = 'none';
+        }
+
+        // --- ACTIONS ---
+        async function resetTenantPassword() {
+            if (!currentTenantId) return;
+            const newPass = document.getElementById('newTenantPassword').value;
+            if (!newPass) {
+                alert('Please enter a new password');
+                return;
+            }
+
+            try {
+                const res = await apiCall(`/tenants/${currentTenantId}/reset-password`, 'POST', { password: newPass });
+                if (res) {
+                    alert('Password reset successfully');
+                    document.getElementById('newTenantPassword').value = '';
+                    closeModal();
+                } else {
+                    alert('Failed to reset password');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Error resetting password');
+            }
+        }
+
+        async function deleteTenant() {
+            if (!currentTenantId) return;
+            if (!confirm('ARE YOU SURE? This will delete the organization and ALL associated data (Users, Attendance, Settings). This cannot be undone.')) return;
+
+            try {
+                // We need to implement this endpoint or just mock for now if not ready
+                // Assuming we add DELETE /api/tenants/:id
+                const res = await apiCall(`/tenants/${currentTenantId}`, 'DELETE');
+                if (res) {
+                    alert('Tenant deleted successfully');
+                    closeModal();
+                    loadAdminData(); // Refresh
+                } else {
+                    alert('Failed to delete tenant');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Error deleting tenant');
+            }
+        }
+
+        document.getElementById('createTenantForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const companyName = document.getElementById('newCompName').value;
+            const email = document.getElementById('newCompEmail').value;
+            const password = document.getElementById('newCompPass').value;
+            const plan = document.getElementById('newCompPlan').value;
+
+            try {
+                const res = await fetch('http://localhost:3000/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ companyName, email, password, plan })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert('Tenant created successfully!');
+                    closeCreateModal();
+                    loadAdminData(); // Refresh list
+                    e.target.reset();
+                } else {
+                    alert(data.error || 'Registration failed');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Connection error');
+            }
+        });
+
+        // --- TABS & NAVIGATION ---
+        function switchTab(tab) {
+            document.querySelectorAll('.tabs button').forEach(b => {
+                b.style.background = 'transparent';
+                b.style.color = 'var(--text-secondary)';
+                b.style.borderColor = 'transparent';
+            });
+
+            const activeBtn = document.getElementById(tab === 'tenants' ? 'tabTenants' : 'tabSystem');
+            activeBtn.style.background = 'var(--accent)';
+            activeBtn.style.color = 'white';
+
+            if (tab === 'tenants') {
+                document.getElementById('viewTenants').style.display = 'block';
+                document.getElementById('viewSystem').style.display = 'none';
+            } else {
+                document.getElementById('viewTenants').style.display = 'none';
+                document.getElementById('viewSystem').style.display = 'block';
+                loadSystemUsers();
+            }
+        }
+
+        // --- SYSTEM USERS ---
+        async function loadSystemUsers() {
+            try {
+                const users = await apiCall('/admin/users');
+                const list = document.getElementById('systemUserList');
+                list.innerHTML = '';
+
+                if (users && users.length > 0) {
+                    users.forEach(u => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${u.name}</td>
+                            <td>${u.email}</td>
+                            <td><span class="stat-badge">${u.role}</span></td>
+                            <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteSystemUser('${u.id}')">Remove</button>
+                            </td>
+                        `;
+                        list.appendChild(tr);
+                    });
+                } else {
+                    list.innerHTML = '<tr><td colspan="5" style="text-align:center;">No system users found.</td></tr>';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function deleteSystemUser(id) {
+            if (!confirm('Delete this system user?')) return;
+            try {
+                await apiCall(`/admin/users/${id}`, 'DELETE');
+                loadSystemUsers();
+            } catch (e) { alert('Failed to delete user'); }
+        }
+
+        document.getElementById('addSystemUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('sysName').value;
+            const email = document.getElementById('sysEmail').value;
+            const password = document.getElementById('sysPass').value;
+            const role = document.getElementById('sysRole').value;
+
+            try {
+                const res = await apiCall('/admin/users', 'POST', { name, email, password, role });
+                if (res) {
+                    alert('System User Created');
+                    document.getElementById('addSystemUserModal').style.display = 'none';
+                    e.target.reset();
+                    loadSystemUsers();
+                }
+            } catch (e) {
+                alert('Error creating user');
+            }
+        });
+
+        // --- TABS & NAVIGATION ---
+        function switchTab(tab) {
+            document.querySelectorAll('.tabs button').forEach(b => {
+                b.style.background = 'transparent';
+                b.style.color = 'var(--text-secondary)';
+                b.style.borderColor = 'transparent';
+            });
+
+            const activeBtn = document.getElementById(tab === 'tenants' ? 'tabTenants' : 'tabSystem');
+            if (activeBtn) {
+                activeBtn.style.background = 'var(--accent)';
+                activeBtn.style.color = 'white';
+            }
+
+            if (tab === 'tenants') {
+                document.getElementById('viewTenants').style.display = 'block';
+                document.getElementById('viewSystem').style.display = 'none';
+            } else {
+                document.getElementById('viewTenants').style.display = 'none';
+                document.getElementById('viewSystem').style.display = 'block';
+                loadSystemUsers();
+            }
+        }
+
+        // --- SYSTEM USERS ---
+        async function loadSystemUsers() {
+            try {
+                const users = await apiCall('/admin/users');
+                const list = document.getElementById('systemUserList');
+                list.innerHTML = '';
+
+                if (users && users.length > 0) {
+                    users.forEach(u => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${u.name}</td>
+                            <td>${u.email}</td>
+                            <td><span class="stat-badge">${u.role}</span></td>
+                            <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteSystemUser('${u.id}')">Remove</button>
+                            </td>
+                        `;
+                        list.appendChild(tr);
+                    });
+                } else {
+                    list.innerHTML = '<tr><td colspan="5" style="text-align:center;">No system users found.</td></tr>';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function deleteSystemUser(id) {
+            if (!confirm('Delete this system user?')) return;
+            try {
+                await apiCall(`/admin/users/${id}`, 'DELETE');
+                loadSystemUsers();
+            } catch (e) { alert('Failed to delete user'); }
+        }
+
+        document.getElementById('addSystemUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('sysName').value;
+            const email = document.getElementById('sysEmail').value;
+            const password = document.getElementById('sysPass').value;
+            const role = document.getElementById('sysRole').value;
+
+            try {
+                const res = await apiCall('/admin/users', 'POST', { name, email, password, role });
+                if (res) {
+                    alert('System User Created');
+                    document.getElementById('addSystemUserModal').style.display = 'none';
+                    e.target.reset();
+                    loadSystemUsers();
+                }
+            } catch (e) {
+                alert('Error creating user');
+            }
+        });
+
+        // --- DATA LOADING ---
+        async function loadAdminData() {
+            try {
+                const res = await apiCall('/tenants/all');
+                const list = document.getElementById('tenantList');
+                list.innerHTML = '';
+
+                if (res && res.length > 0) {
+                    document.getElementById('totalTenants').innerText = res.length;
+
+                    res.forEach(tenant => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>
+                                <div style="font-weight: 500; font-size: 1rem;">${tenant.name}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary);">Simulated Location</div>
+                            </td>
+                            <td style="font-family: monospace; color: var(--accent);">${tenant.id.substring(0, 8)}...</td>
+                            <td>${tenant.email || 'Admin'}</td>
+                            <td><span class="stat-badge" style="background: rgba(79, 70, 229, 0.2); color: #a5b4fc;">Enterprise</span></td>
+                            <td><span class="stat-badge" style="background: rgba(0, 255, 148, 0.1); color: #00ff94;">Active</span></td>
+                            <td>
+                                <button class="btn btn-action btn-sm" onclick="openManageModal('${tenant.id}', '${tenant.name}', '${tenant.email || 'Admin'}')">Manage</button>
+                            </td>
+                        `;
+                        list.appendChild(tr);
+                    });
+                } else {
+                    list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem;">No tenants found.</td></tr>';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // Search Filter (Simple Client Side)
+        document.getElementById('searchInput').addEventListener('keyup', (e) => {
+            const term = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#tenantList tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
+            });
+        });
+
+        loadAdminData();
+    </script>
+</body>
+
+</html>

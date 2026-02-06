@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AttendX</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        // Immediate Auth Check
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <style>
+        /* Add toast animation since it was dynamic in js */
+        @keyframes slideIn {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <h1>AttendX</h1>
+            <p>Workforce Management</p>
+        </div>
+        <nav>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link active">
+                        <span class="nav-icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="employees.html" class="nav-link">
+                        <span class="nav-icon">👥</span>
+                        <span>Employees</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="shifts.html" class="nav-link">
+                        <span class="nav-icon">⏰</span>
+                        <span>Shifts</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="attendance.html" class="nav-link">
+                        <span class="nav-icon">✓</span>
+                        <span>Attendance</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="devices.html" class="nav-link">
+                        <span class="nav-icon">📱</span>
+                        <span>Devices</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="reports.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        <span>Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item" style="margin-top: auto;">
+                    <a href="#" class="nav-link" id="logoutBtn" style="color: var(--danger);">
+                        <span class="nav-icon">🚪</span>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h2 id="companyName">Welcome Back</h2>
+                <p>Here's what's happening with your workforce today</p>
+            </div>
+
+            <!-- Time Display -->
+            <div style="text-align: right;">
+                <div class="current-time" id="currentTime">00:00:00</div>
+                <div class="current-date" id="currentDate" style="color: var(--text-secondary);">Loading...</div>
+            </div>
+        </header>
+
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon primary">👥</div>
+                </div>
+                <div class="stat-value" id="totalEmployees">-</div>
+                <div class="stat-label">Total Employees</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon success">✓</div>
+                </div>
+                <div class="stat-value" id="presentToday">-</div>
+                <div class="stat-label">Present Today</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon warning">⏰</div>
+                </div>
+                <div class="stat-value" id="lateArrivals">-</div>
+                <div class="stat-label">Late Arrivals</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon danger">🏖️</div>
+                </div>
+                <div class="stat-value" id="onLeave">-</div>
+                <div class="stat-label">On Leave</div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Chart Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Attendance Analytics</h3>
+                    <select class="form-select"
+                        style="background: rgba(255,255,255,0.1); color: white; border: none; padding: 5px; border-radius: 5px;">
+                        <option>Today</option>
+                        <option>This Week</option>
+                    </select>
+                </div>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Quick Actions & Reports -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Quick Actions</h3>
+                </div>
+                <div class="quick-actions">
+                    <div class="action-item" onclick="window.location.href='attendance.html'">
+                        <span class="action-icon">📋</span>
+                        <span>View Attendance Logs</span>
+                    </div>
+                    <div class="action-item" onclick="window.location.href='reports.html'">
+                        <span class="action-icon">📈</span>
+                        <span>Generate Reports</span>
+                    </div>
+                    <div class="action-item" onclick="window.location.href='devices.html'">
+                        <span class="action-icon">🖥️</span>
+                        <span>Manage Devices</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-grid" style="margin-top: 2rem;">
+            <!-- Recent Attendance Table -->
+            <div class="card" style="grid-column: span 2;">
+                <div class="card-header">
+                    <h3>Recent Activity</h3>
+                </div>
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Result</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentAttendance"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

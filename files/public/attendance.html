@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance - AttendX</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="logo">
+            <h1>AttendX</h1>
+            <p>Workforce Management</p>
+        </div>
+        <nav>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="index.html" class="nav-link"><span
+                            class="nav-icon">📊</span><span>Dashboard</span></a></li>
+                <li class="nav-item"><a href="employees.html" class="nav-link"><span
+                            class="nav-icon">👥</span><span>Employees</span></a></li>
+                <li class="nav-item"><a href="shifts.html" class="nav-link"><span
+                            class="nav-icon">⏰</span><span>Shifts</span></a></li>
+                <li class="nav-item"><a href="attendance.html" class="nav-link active"><span
+                            class="nav-icon">✓</span><span>Attendance</span></a></li>
+                <li class="nav-item"><a href="devices.html" class="nav-link"><span
+                            class="nav-icon">📱</span><span>Devices</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <div class="header-left">
+                <h2>Attendance Records</h2>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" onclick="window.syncAttendance()">🔄 Sync Devices</button>
+            </div>
+        </header>
+
+        <div class="card">
+            <!-- Simplified filters for now -->
+            <div class="filters" style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                <input type="date" class="form-input" id="filterDate">
+                <button class="btn btn-secondary" onclick="window.filterAttendance()">Filter</button>
+            </div>
+
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Date</th>
+                        <th>Accurate Time</th>
+                        <th>Check-Out</th>
+                        <th>Total Hours</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceTable"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+    <script src="attendance.js"></script>
+</body>
+
+</html>
