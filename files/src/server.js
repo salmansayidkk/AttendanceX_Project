@@ -15,6 +15,10 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 // Middleware
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../public')));
@@ -40,7 +44,8 @@ initDB();
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-    console.log(`http://localhost:${PORT}`);
+    console.log(`Access locally: http://localhost:${PORT}`);
+    console.log(`Access from network: http://<YOUR_IP_ADDRESS>:${PORT}`);
 });
 
 // Prevent crash from node-zklib timeouts/errors
